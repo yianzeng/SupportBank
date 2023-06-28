@@ -24,20 +24,25 @@ function update_account(account, amount, narrative, date) {
     account.transactions.push(t);
 }
 
-readStream = fs.createReadStream("SupportBank/Transactions2014.csv")
-const rl = readline.createInterface(readStream)
+readStream = fs.createReadStream("Transactions2014.csv");
+const rl = readline.createInterface(readStream);
 
-const accounts = {}
+const accounts = {};
+const FilePath = "Transactions2014.csv"
+/*fs.readFile("Transactions2014.csv", 'utf8', function(err, data)){
+    console.log(data);
+}*/
+
 rl.on('line', (line) => {
     const [date, from_whom, to_whom, narrative, amount] = line.split(',')
 
     if (from_whom in accounts) {
-        let acc = accounts[from_whom]
-        update_account(acc, -1*parseFloat(amount), narrative, date)
+        let acc = accounts[from_whom];
+        update_account(acc, -1*parseFloat(amount), narrative, date);
     } else {
         let new_acc = new Account(from_whom);
         accounts[from_whom] = new_acc;
-        update_account(new_acc, parseFloat(amount), narrative, date)
+        update_account(new_acc, parseFloat(amount), narrative, date);
     }
 })
 
