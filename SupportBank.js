@@ -2,6 +2,18 @@ const fs = require("fs");
 const csv = require("csv-parser");
 var readlineSync = require('readline-sync');
 const readline = require("readline");
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        file: { type: 'fileSync', filename: 'logs/debug.log' }
+    },
+    categories: {
+        default: { appenders: ['file'], level: 'debug'}
+    }
+});
+
+const logger = log4js.getLogger('SupportBank.js')
+logger.info('Testing.')
 
 class Account {
     constructor(name) {
@@ -46,6 +58,12 @@ function processTransactions(date, fromAccount, toAccount, narrative, amount, tr
     fromAccount.transactions.push(t)
     toAccount.transactions.push(t)
 }
+
+function errorCheck(amount) {
+    if (!(parseInt(amount))) {
+        logger.warn('Uh-oh')
+    }
+}
 function process(results, accounts, transactions) {
     for (let i = 0; i < results.length; i++) {
         let line = results[i];
@@ -57,10 +75,11 @@ function process(results, accounts, transactions) {
         let fromAccount = processAccounts(fromName, accounts);
         let toAccount = processAccounts(toName, accounts);
 
+
         processTransactions(date, fromAccount, toAccount, narrative, amount, transactions);
 
-        }
     }
+}
 
 
 function displayBalances(accounts) {
@@ -78,27 +97,29 @@ function displayBalances(accounts) {
 }
 
 function displayTransactions(name, accounts) {
-    let acc = accounts[name];
-    console.log(name)
+    let transactions = accounts[name].transactions;
+    for (let i = 0; i < transactions.length; i++) {
+        let t = transactions[i];
+        console.log('Date:', t.date,'|', 'Narrative:', t.narrative)
+    }
 }
 
 let results = [];
 let transactions = [];
 let accounts = {};
+
 fs.createReadStream("Transactions2014.csv")
     .pipe(csv())
     .on('data', (data) => results.push(data))
     .on('end', () => {
         process(results, accounts, transactions);
         let order = readlineSync.question('Input List All or List [Account]: ');
-        if (order = 'List All') {
+        if (order == 'List All') {
             displayBalances(accounts);
         } else {
             let name = order.slice(5)
             displayTransactions(name, accounts)
         }
-
     });
-
 
 

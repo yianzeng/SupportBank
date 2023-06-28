@@ -1,0 +1,1 @@
+const logger = log4js.getLogger('<filename>');
